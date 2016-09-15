@@ -35,8 +35,8 @@ func main() {
 	service := new(Service)
 
 	// Transfer specified config from file to struct.
-	service.IP = os.Getenv("GIT_WEBHOOK_SERVICE_LISTEN_IP")
-	service.Port = os.Getenv("GIT_WEBHOOK_SERVICE_LISTEN_PORT")
+	service.IP = os.Getenv("GIT_WEBHOOK_LISTENER_IP")
+	service.Port = os.Getenv("GIT_WEBHOOK_LISTENER_PORT")
 
 	// Define actions to execute on received webhooks.
 	http.HandleFunc("/trigger", func(w http.ResponseWriter, req *http.Request) {
