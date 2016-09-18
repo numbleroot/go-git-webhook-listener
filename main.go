@@ -106,15 +106,15 @@ func (hugoSite *HugoWebsite) RebuildHugo() {
 	log.Println("[git webhook listener] Recompiling files with hugo.")
 
 	// Execute hugo's compile command.
-	cmdHugo := exec.Command("hugo")
+	cmdHugo := exec.Command(hugoSite.HugoExecPath)
 	cmdHugo.Dir = hugoSite.Repo
 
 	// Run the command.
 	if err := cmdHugo.Run(); err != nil {
-		log.Fatalf("[git webhook listener]  => 'hugo' failed with: %s. Terminating.\n", err.Error())
+		log.Fatalf("[git webhook listener]  => '%s' failed with: %s. Terminating.\n", hugoSite.HugoExecPath, err.Error())
 	}
 
-	log.Println("[git webhook listener]  => 'hugo' succeeded.")
+	log.Printf("[git webhook listener]  => '%s' succeeded.", hugoSite.HugoExecPath)
 	log.Println("[git webhook listener] Starting hugo server again.")
 
 	// Start hugo server again.
