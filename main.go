@@ -22,8 +22,9 @@ import (
 // includes the process ID of the hugo server as well as
 // the path to the local repository to rebuild.
 type HugoWebsite struct {
-	HugoProc *os.Process
-	Repo     string
+	HugoExecPath string
+	HugoProc     *os.Process
+	Repo         string
 }
 
 // Functions
@@ -33,7 +34,7 @@ type HugoWebsite struct {
 func (hugoSite *HugoWebsite) StartHugo() error {
 
 	// Define 'hugo server' command to be run from repository.
-	cmdHugoServer := exec.Command("hugo", "server")
+	cmdHugoServer := exec.Command(hugoSite.HugoExecPath, "server")
 	cmdHugoServer.Dir = hugoSite.Repo
 
 	// Start the process but immediately detach from it.
@@ -137,6 +138,7 @@ func main() {
 	// Transfer specified config from file to struct.
 	ip := os.Getenv("GIT_WEBHOOK_LISTENER_IP")
 	port := os.Getenv("GIT_WEBHOOK_LISTENER_PORT")
+	hugoSite.HugoExecPath = os.Getenv("GIT_WEBHOOK_HUGO_EXECUTABLE_PATH")
 	hugoSite.Repo = os.Getenv("GIT_WEBHOOK_REBUILD_REPO_PATH")
 
 	// Start hugo.
