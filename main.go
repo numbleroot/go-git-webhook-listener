@@ -25,6 +25,9 @@ type HugoWebsite struct {
 	HugoExecPath string
 	HugoProc     *os.Process
 	Repo         string
+	IP           string
+	Port         string
+	AppendPort   string
 }
 
 // Functions
@@ -34,7 +37,7 @@ type HugoWebsite struct {
 func (hugoSite *HugoWebsite) StartHugo() error {
 
 	// Define 'hugo server' command to be run from repository.
-	cmdHugoServer := exec.Command(hugoSite.HugoExecPath, "server")
+	cmdHugoServer := exec.Command(hugoSite.HugoExecPath, "server", "--bind", hugoSite.IP, "--port", hugoSite.Port, "--appendPort", hugoSite.AppendPort)
 	cmdHugoServer.Dir = hugoSite.Repo
 
 	// Start the process but immediately detach from it.
@@ -102,7 +105,7 @@ func (hugoSite *HugoWebsite) RebuildHugo() {
 		log.Fatalf("[git webhook listener]  => RemoveAll('%s') failed with: %s. Terminating.\n", (hugoSite.Repo + "/public"), err.Error())
 	}
 
-	log.Printf("[git webhook listener]  => RemoveAll('%s')  succeeded.\n", (hugoSite.Repo + "/public"))
+	log.Printf("[git webhook listener]  => RemoveAll('%s') succeeded.\n", (hugoSite.Repo + "/public"))
 	log.Println("[git webhook listener] Recompiling files with hugo.")
 
 	// Execute hugo's compile command.
@@ -140,6 +143,9 @@ func main() {
 	port := os.Getenv("GIT_WEBHOOK_LISTENER_PORT")
 	hugoSite.HugoExecPath = os.Getenv("GIT_WEBHOOK_HUGO_EXECUTABLE_PATH")
 	hugoSite.Repo = os.Getenv("GIT_WEBHOOK_REBUILD_REPO_PATH")
+	hugoSite.IP = os.Getenv("GIT_WEBHOOK_HUGO_BIND_ADDRESS")
+	hugoSite.Port = os.Getenv("GIT_WEBHOOK_HUGO_PORT")
+	hugoSite.AppendPort = os.Getenv("GIT_WEBHOOK_HUGO_APPEND_PORT")
 
 	// Start hugo.
 	if err := hugoSite.StartHugo(); err != nil {
