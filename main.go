@@ -47,6 +47,24 @@ func (hugoSite *HugoWebsite) StartHugo() error {
 	return nil
 }
 
+// StopHugo ends the currently running hugo static
+// site generator process.
+func (hugoSite *HugoWebsite) StopHugo() error {
+
+	// Tell the process to stop immediately.
+	if err := hugoSite.HugoProc.Kill(); err != nil {
+		return err
+	}
+
+	// Wait for process to exit and collect
+	// process status information.
+	if _, err := hugoSite.HugoProc.Wait(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // RebuildHugo defines the actions to be done when
 // a git webhook was received that indicated change
 // in a hugo website repository. In such case, this
@@ -71,10 +89,9 @@ func (hugoSite *HugoWebsite) RebuildHugo() {
 	log.Println("[git webhook listener] Stopping hugo server process.")
 
 	// Stop the currently running hugo command.
-	if err := hugoSite.HugoProc.Kill(); err != nil {
+	if err := hugoSite.StopHugo(); err != nil {
 		log.Fatalf("[git webhook listener]  => Stopping hugo server failed with: %s. Terminating.\n", err.Error())
 	}
-	hugoSite.HugoProc.Wait()
 
 	log.Println("[git webhook listener]  => hugo server stopped.")
 	log.Printf("[git webhook listener] Removing '%s' folder in repository.", (hugoSite.Repo + "/public"))
@@ -104,8 +121,6 @@ func (hugoSite *HugoWebsite) RebuildHugo() {
 		log.Fatalf("[git webhook listener]  => Starting hugo server failed: %s\n", err.Error())
 	}
 
-	log.Printf("new hugo proc id: %d\n", hugoSite.HugoProc.Pid)
-
 	log.Println("[git webhook listener] SUCCESS: hugo server started again. All done. Goodbye.")
 }
 
@@ -128,8 +143,6 @@ func main() {
 	if err := hugoSite.StartHugo(); err != nil {
 		log.Fatalf("[git webhook listener] Could not start hugo server: %s\n", err.Error())
 	}
-
-	log.Printf("hugo proc id: %d\n", hugoSite.HugoProc.Pid)
 
 	// Define actions to execute on received webhooks.
 	http.HandleFunc("/trigger", func(w http.ResponseWriter, req *http.Request) {
