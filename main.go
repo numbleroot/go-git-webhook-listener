@@ -28,6 +28,7 @@ type HugoWebsite struct {
 	IP           string
 	Port         string
 	AppendPort   string
+	BaseURL      string
 }
 
 // Functions
@@ -37,7 +38,7 @@ type HugoWebsite struct {
 func (hugoSite *HugoWebsite) StartHugo() error {
 
 	// Define 'hugo server' command to be run from repository.
-	cmdHugoServer := exec.Command(hugoSite.HugoExecPath, "server", "--bind", hugoSite.IP, "--port", hugoSite.Port, "--appendPort", hugoSite.AppendPort)
+	cmdHugoServer := exec.Command(hugoSite.HugoExecPath, "server", ("--bind=" + hugoSite.IP), ("--port=" + hugoSite.Port), ("--appendPort=" + hugoSite.AppendPort), ("--baseURL=" + hugoSite.BaseURL), ("--config=" + hugoSite.Repo + "/config.toml"))
 	cmdHugoServer.Dir = hugoSite.Repo
 
 	// Start the process but immediately detach from it.
@@ -146,6 +147,7 @@ func main() {
 	hugoSite.IP = os.Getenv("GIT_WEBHOOK_HUGO_BIND_ADDRESS")
 	hugoSite.Port = os.Getenv("GIT_WEBHOOK_HUGO_PORT")
 	hugoSite.AppendPort = os.Getenv("GIT_WEBHOOK_HUGO_APPEND_PORT")
+	hugoSite.BaseURL = os.Getenv("GIT_WEBHOOK_HUGO_BASE_URL")
 
 	// Start hugo.
 	if err := hugoSite.StartHugo(); err != nil {
